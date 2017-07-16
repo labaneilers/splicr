@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace aspnetapp
+namespace Splicr
 {
     public class Program
     {
@@ -30,6 +31,7 @@ namespace aspnetapp
                 .Configure(app =>
                 {
                     // to do - wire in our HTTP endpoints
+                    app.UseMiddleware<RouterMiddleware>();
                 })
                 .Build();
  
