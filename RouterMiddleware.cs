@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
@@ -14,6 +16,15 @@ namespace Splicr
             _next = next;
         }
 
+        private void CopyHeaders(IEnumerable<KeyValuePair<string, IEnumerable<string>>> source, IHeaderDictionary dest)
+        {
+            foreach (var pair in source) {
+                Console.WriteLine($"copying response header: {pair.Key}: {string.Join(", ", pair.Value)}");
+
+                dest.Add(pair.Key, string.Join(", ", pair.Value));
+            }   
+        }
+
         public async Task Invoke(HttpContext httpContext)
         {
             Console.WriteLine($"Request for {httpContext.Request.Path} received ({httpContext.Request.ContentLength ?? 0} bytes)");
@@ -25,6 +36,7 @@ namespace Splicr
                 string pathAndQuery = httpContext.Request.Path + httpContext.Request.QueryString;
 
                 httpClient.DefaultRequestHeaders.Clear();
+
                 foreach (var pair in httpContext.Request.Headers) 
                 {
                     if (pair.Key.Equals("host", StringComparison.OrdinalIgnoreCase)) {
@@ -35,15 +47,16 @@ namespace Splicr
                     httpClient.DefaultRequestHeaders.Add(pair.Key, string.Join(", ", pair.Value));
                 }
 
-                HttpResponseMessage response = await httpClient.GetAsync($"http://www.labaneilers.com{pathAndQuery}");
-                string responseBody = await response.Content.ReadAsStringAsync();
+                HttpResponseMessage response = await httpClient.GetAsync(
+                    $"http://www.labaneilers.com{pathAndQuery}", 
+                    HttpCompletionOption.ResponseHeadersRead);
+
                 httpContext.Response.StatusCode = (int)response.StatusCode;
 
-                foreach (var pair in response.Headers) {
-                    httpContext.Response.Headers.Add(pair.Key, string.Join(", ", pair.Value));
-                }
+                CopyHeaders(response.Headers, httpContext.Response.Headers);
+                CopyHeaders(response.Content.Headers, httpContext.Response.Headers);
 
-                await httpContext.Response.WriteAsync(responseBody);
+                await response.Content.CopyToAsync(httpContext.Response.Body);
 
                 Console.WriteLine();
             }
