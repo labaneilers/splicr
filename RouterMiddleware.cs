@@ -38,6 +38,11 @@ namespace Splicr
             }   
         }
 
+        private IBackend GetBackend(HttpRequest request)
+        {
+            return new BasicBackend();
+        }
+
         public async Task Invoke(HttpContext httpContext)
         {
             Console.WriteLine($"Request for {httpContext.Request.Path} received ({httpContext.Request.ContentLength ?? 0} bytes)");
@@ -48,12 +53,18 @@ namespace Splicr
 
                 string pathAndQuery = httpContext.Request.Path + httpContext.Request.QueryString;
 
+                IBackend backend = GetBackend(httpContext.Request);
+
                 httpClient.DefaultRequestHeaders.Clear();
 
-                CopyRequestHeaders(httpContext.Request.Headers, httpClient.DefaultRequestHeaders, new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "host" });
+                CopyRequestHeaders(
+                    httpContext.Request.Headers, 
+                    httpClient.DefaultRequestHeaders, 
+                    new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "host" } // Use HOST header for backend: it might use it for routing
+                );
 
                 HttpResponseMessage response = await httpClient.GetAsync(
-                    $"http://www.labaneilers.com{pathAndQuery}", 
+                    backend.GetUrl(httpContext.Request), 
                     HttpCompletionOption.ResponseHeadersRead);
 
                 httpContext.Response.StatusCode = (int)response.StatusCode;
@@ -62,7 +73,11 @@ namespace Splicr
                 CopyResponseHeaders(response.Headers, httpContext.Response.Headers);
                 CopyResponseHeaders(response.Content.Headers, httpContext.Response.Headers);
 
+                await backend.WriteHtmlHeader(httpContext, response);
+
                 await response.Content.CopyToAsync(httpContext.Response.Body);
+
+                await backend.WriteHtmlFooter(httpContext, response);
 
                 Console.WriteLine();
             }
