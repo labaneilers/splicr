@@ -16,9 +16,22 @@ namespace Splicr
             _next = next;
         }
 
-        private void CopyHeaders(IEnumerable<KeyValuePair<string, IEnumerable<string>>> source, IHeaderDictionary dest)
+        private void CopyResponseHeaders(IEnumerable<KeyValuePair<string, IEnumerable<string>>> source, IHeaderDictionary dest)
         {
             foreach (var pair in source) {
+                Console.WriteLine($"copying response header: {pair.Key}: {string.Join(", ", pair.Value)}");
+
+                dest.Add(pair.Key, string.Join(", ", pair.Value));
+            }   
+        }
+
+        private void CopyRequestHeaders(IHeaderDictionary source, HttpHeaders dest, ISet<string> exclude = null)
+        {
+            foreach (var pair in source) {
+                if (exclude != null && exclude.Contains(pair.Key)) {
+                    continue;
+                }
+
                 Console.WriteLine($"copying response header: {pair.Key}: {string.Join(", ", pair.Value)}");
 
                 dest.Add(pair.Key, string.Join(", ", pair.Value));
@@ -37,24 +50,17 @@ namespace Splicr
 
                 httpClient.DefaultRequestHeaders.Clear();
 
-                foreach (var pair in httpContext.Request.Headers) 
-                {
-                    if (pair.Key.Equals("host", StringComparison.OrdinalIgnoreCase)) {
-                        continue;
-                    }
-
-                    Console.WriteLine($"request: {pair.Key}: {string.Join(", ", pair.Value)}");
-                    httpClient.DefaultRequestHeaders.Add(pair.Key, string.Join(", ", pair.Value));
-                }
+                CopyRequestHeaders(httpContext.Request.Headers, httpClient.DefaultRequestHeaders, new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "host" });
 
                 HttpResponseMessage response = await httpClient.GetAsync(
                     $"http://www.labaneilers.com{pathAndQuery}", 
                     HttpCompletionOption.ResponseHeadersRead);
 
                 httpContext.Response.StatusCode = (int)response.StatusCode;
+                httpContext.Response.Headers.Clear();
 
-                CopyHeaders(response.Headers, httpContext.Response.Headers);
-                CopyHeaders(response.Content.Headers, httpContext.Response.Headers);
+                CopyResponseHeaders(response.Headers, httpContext.Response.Headers);
+                CopyResponseHeaders(response.Content.Headers, httpContext.Response.Headers);
 
                 await response.Content.CopyToAsync(httpContext.Response.Body);
 
