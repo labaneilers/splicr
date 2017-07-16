@@ -31,7 +31,7 @@ namespace Splicr
                 .Configure(app =>
                 {
                     // to do - wire in our HTTP endpoints
-                    app.UseMiddleware<RouterMiddleware>();
+                    app.UseMiddleware<ProxyMiddleware>();
                 })
                 .Build();
  
