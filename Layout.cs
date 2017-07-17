@@ -13,20 +13,22 @@ using Microsoft.Extensions.Logging;
 
 namespace Splicr
 {
-    public class BasicBackend : IBackend
+    public class Layout
     {
         private string _templateUrl;
         private string _templateStart;
         private string _templateEnd;
+        private string _name;
 
         private static object _lock = new Object();
 
-        public BasicBackend(string templateUrl)
+        public Layout(string name, string templateUrl)
         {
+            _name = name;
             _templateUrl = templateUrl;
         }
 
-        private void LoadTemplate()
+        private void Load()
         {
             var httpClient = new HttpClient();
             HttpResponseMessage response = httpClient.GetAsync(_templateUrl).Result;
@@ -52,23 +54,14 @@ namespace Splicr
                 {
                     if (_templateStart == null)
                     {
-                        LoadTemplate();
+                        Load();
                     }
                 }
             }
         }
 
-        public bool ShouldHandle(HttpRequest request)
-        {
-            return true;
-        }
-
         public async Task WriteHtmlHeader(HttpContext httpContext, HttpResponseMessage response)
         {
-            if (response.Content.Headers?.ContentType?.MediaType != "text/html") {
-                return;
-            }
-
             EnsureTemplate();
 
             await httpContext.Response.WriteAsync(_templateStart);
@@ -76,20 +69,9 @@ namespace Splicr
 
         public async Task WriteHtmlFooter(HttpContext httpContext, HttpResponseMessage response)
         {
-            if (response.Content.Headers?.ContentType?.MediaType != "text/html") {
-                return;
-            }
-
             EnsureTemplate();
 
             await httpContext.Response.WriteAsync(_templateEnd);
         } 
-
-        public string GetUrl(HttpRequest request)
-        {
-            string pathAndQuery = request.Path + request.QueryString;
-
-            return $"http://localhost:5001{pathAndQuery}";
-        }
     }
 }

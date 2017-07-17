@@ -15,13 +15,6 @@ namespace Splicr
 {
     public interface IBackend
     {
-        bool ShouldHandle(HttpRequest request);
-
-        Task WriteHtmlHeader(HttpContext httpContext, HttpResponseMessage response);
-
-        Task WriteHtmlFooter(HttpContext httpContext, HttpResponseMessage response);
-       
         string GetUrl(HttpRequest request);
-        
     }
 }

@@ -34,7 +34,13 @@ namespace Splicr
                     app.UseMiddleware<ProxyMiddleware>();
                 })
                 .Build();
- 
+
+            BackendRegistry.Register(new RegexBackend("http://localhost:5001", @"^\/content1\/(.*)", "/$1"));
+            BackendRegistry.Register(new RegexBackend("http://localhost:5002", @"^\/content2\/(.*)", "/$1"));
+
+            LayoutRegistry.Register("standard", "http://localhost:5001/standard.html", true);
+            LayoutRegistry.Register("lite", "http://localhost:5001/lite.html", false);
+
             host.Run();
         }
     }

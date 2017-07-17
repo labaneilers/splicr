@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using System.Linq;
 
 namespace Splicr 
 {
@@ -15,11 +16,6 @@ namespace Splicr
         public ProxyMiddleware(RequestDelegate next)
         {
             _next = next;
-        }
-
-        private IBackend GetBackend(HttpRequest request)
-        {
-            return new BasicBackend("http://localhost:5001/standard.html");
         }
 
         private ISessionCreator GetSessionCreator()
@@ -42,32 +38,39 @@ namespace Splicr
                     sessionId = await sessionCreator.Create(httpContext);
                 }
 
-                IBackend backend = GetBackend(httpContext.Request);
+                string backendUrl = BackendRegistry.GetUrl(httpContext.Request);
 
                 HttpResponseMessage response = await ProxyHttpClient.Send(
                     httpContext, 
-                    backend.GetUrl(httpContext.Request));
+                    backendUrl);
 
                 httpContext.Response.StatusCode = (int)response.StatusCode;
 
-                Console.WriteLine($"{response.Content.Headers.ContentLength}: {httpContext.Request.Path}");
-
                 httpContext.Response.Headers.Clear();
 
-                //httpContext.Response.Cookies.Append(SESSION_KEY, sessionId);
+                httpContext.Response.Cookies.Append(SESSION_KEY, sessionId);
 
                 ProxyHttpClient.CopyResponseHeaders(response.Headers, httpContext.Response.Headers);
                 ProxyHttpClient.CopyResponseHeaders(response.Content.Headers, httpContext.Response.Headers);
 
+                // TODO: Find all statuses that shouldn't write content
+                // For a 304 response, don't write any content
+                if (response.StatusCode == HttpStatusCode.NotModified)
+                {
+                    return;
+                }
+
+                // TODO: Something's occasionally not working with chunked encoding
+                // Look into this
                 httpContext.Response.ContentLength = null;
 
-                await backend.WriteHtmlHeader(httpContext, response);
+                Layout layout = LayoutRegistry.Get(response.Headers);
+
+                await layout.WriteHtmlHeader(httpContext, response);
 
                 await response.Content.CopyToAsync(httpContext.Response.Body);
 
-                await backend.WriteHtmlFooter(httpContext, response);
-
-                //Console.WriteLine();
+                await layout.WriteHtmlFooter(httpContext, response);
             }
             catch (Exception ex)
             {

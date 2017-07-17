@@ -64,7 +64,7 @@ namespace Splicr
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error writing header: {pair.Key} {pair.Value}");
+                    Console.WriteLine($"Error writing header: {pair.Key} {pair.Value} {ex.Message}");
                 }
             }   
         }
