@@ -32,6 +32,9 @@ This is an experiment to create an open-source version of the production micro-f
 * Would it be better to try to do this with Varnish or Ngnix? Are they extensible enough to fulfill the responsibilities (i.e. splicing layouts, arbitrary code for routing)?  
 * How about https://www.mosaic9.org/ - this seems like a more extensive ecosystem, more flexible than simple splicing content into layouts. However, this flexibility might come at a performance/complexity cost, compared to the much simpler use-case that splicr is going for.
 
+## Notes
+* We might use https://github.com/madskristensen/ReverseProxyCDN for technical inspiration on building a proxy in .NET
+
 ## Setup
 
 1. Install dotnet core: https://www.microsoft.com/net/download/core
