@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -18,7 +19,7 @@ namespace Splicr
 
         private IBackend GetBackend(HttpRequest request)
         {
-            return new BasicBackend();
+            return new BasicBackend("http://localhost:5001/standard.html");
         }
 
         private ISessionCreator GetSessionCreator()
@@ -28,7 +29,7 @@ namespace Splicr
 
         public async Task Invoke(HttpContext httpContext)
         {
-            Console.WriteLine($"Request for {httpContext.Request.Path} received ({httpContext.Request.ContentLength ?? 0} bytes)");
+            // Console.WriteLine($"Request for {httpContext.Request.Path} received ({httpContext.Request.ContentLength ?? 0} bytes)");
             
             try
             {   
@@ -48,6 +49,9 @@ namespace Splicr
                     backend.GetUrl(httpContext.Request));
 
                 httpContext.Response.StatusCode = (int)response.StatusCode;
+
+                Console.WriteLine($"{response.Content.Headers.ContentLength}: {httpContext.Request.Path}");
+
                 httpContext.Response.Headers.Clear();
 
                 //httpContext.Response.Cookies.Append(SESSION_KEY, sessionId);
@@ -55,13 +59,15 @@ namespace Splicr
                 ProxyHttpClient.CopyResponseHeaders(response.Headers, httpContext.Response.Headers);
                 ProxyHttpClient.CopyResponseHeaders(response.Content.Headers, httpContext.Response.Headers);
 
+                httpContext.Response.ContentLength = null;
+
                 await backend.WriteHtmlHeader(httpContext, response);
 
                 await response.Content.CopyToAsync(httpContext.Response.Body);
 
                 await backend.WriteHtmlFooter(httpContext, response);
 
-                Console.WriteLine();
+                //Console.WriteLine();
             }
             catch (Exception ex)
             {

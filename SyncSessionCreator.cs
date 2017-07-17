@@ -23,7 +23,7 @@ namespace Splicr
             // Notify a service that a new session is detected
             HttpResponseMessage response = await ProxyHttpClient.Send(
                 httpContext, 
-                "http://www.labaneilers.com");
+                "http://localhost:5001/session.json");
 
             // TODO: do something with response?
             // Handle some errors, perhaps?

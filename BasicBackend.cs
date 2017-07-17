@@ -15,6 +15,49 @@ namespace Splicr
 {
     public class BasicBackend : IBackend
     {
+        private string _templateUrl;
+        private string _templateStart;
+        private string _templateEnd;
+
+        private static object _lock = new Object();
+
+        public BasicBackend(string templateUrl)
+        {
+            _templateUrl = templateUrl;
+        }
+
+        private void LoadTemplate()
+        {
+            var httpClient = new HttpClient();
+            HttpResponseMessage response = httpClient.GetAsync(_templateUrl).Result;
+            response.EnsureSuccessStatusCode();
+            string content = response.Content.ReadAsStringAsync().Result;
+
+            const string CONTENT_TOKEN = "{{content}}";
+            int contentPos = content.IndexOf(CONTENT_TOKEN);
+            if (contentPos < 0) 
+            {
+                throw new Exception("Layout content invalid: No content region found");
+            }
+
+            _templateStart = content.Substring(0, contentPos);
+            _templateEnd = content.Substring(contentPos + CONTENT_TOKEN.Length);
+        }
+
+        private void EnsureTemplate()
+        {
+            if (_templateStart == null)
+            {
+                lock (_lock)
+                {
+                    if (_templateStart == null)
+                    {
+                        LoadTemplate();
+                    }
+                }
+            }
+        }
+
         public bool ShouldHandle(HttpRequest request)
         {
             return true;
@@ -26,7 +69,9 @@ namespace Splicr
                 return;
             }
 
-            await httpContext.Response.WriteAsync("<!-- start proxy -->");
+            EnsureTemplate();
+
+            await httpContext.Response.WriteAsync(_templateStart);
         } 
 
         public async Task WriteHtmlFooter(HttpContext httpContext, HttpResponseMessage response)
@@ -35,14 +80,16 @@ namespace Splicr
                 return;
             }
 
-            await httpContext.Response.WriteAsync("<!-- end proxy -->");
+            EnsureTemplate();
+
+            await httpContext.Response.WriteAsync(_templateEnd);
         } 
 
         public string GetUrl(HttpRequest request)
         {
             string pathAndQuery = request.Path + request.QueryString;
 
-            return $"http://www.labaneilers.com{pathAndQuery}";
+            return $"http://localhost:5001{pathAndQuery}";
         }
     }
 }

@@ -43,7 +43,7 @@ namespace Splicr
         public static void CopyResponseHeaders(IEnumerable<KeyValuePair<string, IEnumerable<string>>> source, IHeaderDictionary dest)
         {
             foreach (var pair in source) {
-                Console.WriteLine($"copying response header: {pair.Key}: {string.Join(", ", pair.Value)}");
+                // Console.WriteLine($"copying response header: {pair.Key}: {string.Join(", ", pair.Value)}");
 
                 dest.Add(pair.Key, string.Join(", ", pair.Value));
             }   
@@ -56,9 +56,16 @@ namespace Splicr
                     continue;
                 }
 
-                Console.WriteLine($"copying response header: {pair.Key}: {string.Join(", ", pair.Value)}");
+                //Console.WriteLine($"copying response header: {pair.Key}: {string.Join(", ", pair.Value)}");
 
-                dest.Add(pair.Key, string.Join(", ", pair.Value));
+                try
+                {
+                    dest.Add(pair.Key, string.Join(", ", pair.Value));
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error writing header: {pair.Key} {pair.Value}");
+                }
             }   
         }
     }
