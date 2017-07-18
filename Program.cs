@@ -26,7 +26,7 @@ namespace Splicr
                 .UseConfiguration(config)
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
-                .ConfigureLogging(l => l.AddConsole(config.GetSection("Logging")))
+                //.ConfigureLogging(l => l.AddConsole(config.GetSection("Logging")))
                 .ConfigureServices(s => s.AddRouting())
                 .Configure(app =>
                 {
@@ -35,6 +35,8 @@ namespace Splicr
                 })
                 .Build();
 
+            // TODO: Create a configuration system for this
+            
             BackendRegistry.Register(new RegexBackend("http://localhost:5001", @"^\/content1\/(.*)", "/$1"));
             BackendRegistry.Register(new RegexBackend("http://localhost:5002", @"^\/content2\/(.*)", "/$1"));
 

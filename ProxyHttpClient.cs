@@ -19,25 +19,35 @@ namespace Splicr
         private static HttpClient _httpClient = new HttpClient();
 
         public static async Task<HttpResponseMessage> Send(HttpContext httpContext, string url)
-        {
+        {   
+            var requestMessage = new HttpRequestMessage();
+            var requestMethod = httpContext.Request.Method;
+            
+            if (!HttpMethods.IsGet(requestMethod)&&
+                !HttpMethods.IsHead(requestMethod) &&
+                !HttpMethods.IsDelete(requestMethod)&&
+                !HttpMethods.IsTrace(requestMethod))
+            {
+                var streamContent = new StreamContent(httpContext.Request.Body);
+                requestMessage.Content = streamContent;
+            }
+
             _httpClient.DefaultRequestHeaders.Clear();
 
             CopyRequestHeaders(
                 httpContext.Request.Headers, 
-                _httpClient.DefaultRequestHeaders, 
+                requestMessage.Headers, 
+                requestMessage.Content?.Headers,
                 new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "host" } // Use HOST header for backend: it might use it for routing
             );
 
-            var method = new HttpMethod(httpContext.Request.Method);
-            var message = new HttpRequestMessage(method, url);
-            if (method.Method == "POST" || method.Method == "PUT")
-            {
-                message.Content = new StreamContent(httpContext.Request.Body);
-            }
+            requestMessage.RequestUri = new Uri(url);
+            requestMessage.Method = new HttpMethod(requestMethod);
 
             return await _httpClient.SendAsync(
-                message, 
-                HttpCompletionOption.ResponseHeadersRead);
+                requestMessage, 
+                HttpCompletionOption.ResponseHeadersRead,
+                httpContext.RequestAborted);
         }
 
         public static void CopyResponseHeaders(IEnumerable<KeyValuePair<string, IEnumerable<string>>> source, IHeaderDictionary dest)
@@ -49,22 +59,17 @@ namespace Splicr
             }   
         }
 
-        public static void CopyRequestHeaders(IHeaderDictionary source, HttpHeaders dest, ISet<string> exclude = null)
+        public static void CopyRequestHeaders(IHeaderDictionary source, HttpHeaders dest, HttpHeaders contentDest, ISet<string> exclude = null)
         {
-            foreach (var pair in source) {
+            foreach (var pair in source) 
+            {
                 if (exclude != null && exclude.Contains(pair.Key)) {
                     continue;
                 }
 
-                //Console.WriteLine($"copying response header: {pair.Key}: {string.Join(", ", pair.Value)}");
-
-                try
+                if (!dest.TryAddWithoutValidation(pair.Key, pair.Value.ToArray()) && contentDest != null)
                 {
-                    dest.Add(pair.Key, string.Join(", ", pair.Value));
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error writing header: {pair.Key} {pair.Value} {ex.Message}");
+                    contentDest.TryAddWithoutValidation(pair.Key, pair.Value.ToArray());
                 }
             }   
         }

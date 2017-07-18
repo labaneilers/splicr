@@ -1,21 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp1.1</TargetFramework>
-    <RuntimeIdentifiers>centos.7-x64; debian.8-x64; ol.7.0-x64; ol.7.1-x64; ol.7.2-x64; opensuse.13.2-x64; osx.10.10-x64; osx.10.11-x64; linuxmint.17-x64; linuxmint.17.1-x64; linuxmint.17.2-x64; linuxmint.17.3-x64; rhel.7.2-x64; ubuntu.14.04-x64; ubuntu.14.10-x64; ubuntu.15.04-x64; ubuntu.15.10-x64; ubuntu.16.04-x64; win7-x64; win7-x86</RuntimeIdentifiers>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!-- <RuntimeIdentifiers>centos.7-x64; debian.8-x64; ol.7.0-x64; ol.7.1-x64; ol.7.2-x64; opensuse.13.2-x64; osx.10.10-x64; osx.10.11-x64; linuxmint.17-x64; linuxmint.17.1-x64; linuxmint.17.2-x64; linuxmint.17.3-x64; rhel.7.2-x64; ubuntu.14.04-x64; ubuntu.14.10-x64; ubuntu.15.04-x64; ubuntu.15.10-x64; ubuntu.16.04-x64; win7-x64; win7-x86</RuntimeIdentifiers> -->
+    <AspNetCoreVersion>2.0.0-*</AspNetCoreVersion>
+    <InternalAspNetCoreSdkVersion>2.0.1-*</InternalAspNetCoreSdkVersion>
+    <NETStandardImplicitPackageVersion>2.0.0-*</NETStandardImplicitPackageVersion>
+    <NETStandardLibraryNETFrameworkVersion>2.0.0-*</NETStandardLibraryNETFrameworkVersion>
+    <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
+    <TestSdkVersion>15.3.0-*</TestSdkVersion>
+    <XunitVersion>2.3.0-beta2-*</XunitVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.DotNet.Watcher.Tools" Version="1.0.0" />
-  </ItemGroup> 
+  </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore" Version="1.1.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="1.1.2" />
-    <!-- <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.2" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.1.1" /> -->
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="1.1.2" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.1.2" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="1.1.2" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="1.1.2" />
-    <!-- <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="1.1.0" /> -->
+    <PackageReference Include="Microsoft.AspNetCore" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 </Project>
