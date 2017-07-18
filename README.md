@@ -34,6 +34,7 @@ This is an experiment to create an open-source version of the production micro-f
 
 ## Notes
 * We might use https://github.com/madskristensen/ReverseProxyCDN for technical inspiration on building a proxy in .NET
+* This looks like it handles the richness of HTTP: https://github.com/aspnet/Proxy 
 
 ## Setup
 
