@@ -121,6 +121,11 @@ namespace Splicr
 
                 string backendUrl = BackendRegistry.GetUrl(httpContext.Request);
 
+                if (backendUrl == null)
+                {
+                    throw new Exception($"No backend found for path: {httpContext.Request.Path + httpContext.Request.QueryString}");
+                }
+
                 using (HttpResponseMessage response = await ProxyHttpClient.Send(
                     httpContext, 
                     backendUrl))
@@ -141,22 +146,32 @@ namespace Splicr
 
                     httpContext.Response.Headers.Remove("transfer-encoding");
 
-                    Layout layout = LayoutRegistry.Get(response.Headers);
+                    if (response.Content.Headers.ContentType.MediaType == "text/html")
+                    {
+                        httpContext.Response.Headers.Remove("content-encoding");
+                        httpContext.Response.Headers.ContentLength = null;
 
-                    await layout.WriteHtmlHeader(httpContext, response);
+                        Layout layout = LayoutRegistry.Get(response.Headers);
 
-                    await response.Content.CopyToAsync(httpContext.Response.Body);
+                        await layout.WriteHtmlHeader(httpContext, response);
 
-                    await layout.WriteHtmlFooter(httpContext, response);
+                        await response.Content.CopyToAsync(httpContext.Response.Body);
+
+                        await layout.WriteHtmlFooter(httpContext, response);
+                    }
+                    else
+                    {
+                        await response.Content.CopyToAsync(httpContext.Response.Body);
+                    }
                 }
             }
             catch (Exception ex)
             {
                 httpContext.Response.StatusCode = 500;
                 httpContext.Response.ContentType = "text/plain";
-                await httpContext.Response.WriteAsync("Error: " + ex.Message);
-                await httpContext.Response.WriteAsync("Source: " + ex.Source);
-                await httpContext.Response.WriteAsync("Stack: " + ex.StackTrace);
+                await httpContext.Response.WriteAsync("Error: " + ex.Message + "\n");
+                await httpContext.Response.WriteAsync("Source: " + ex.Source + "\n");
+                await httpContext.Response.WriteAsync("Stack: " + ex.StackTrace + "\n");
             }
 
             // Call the next middleware delegate in the pipeline 

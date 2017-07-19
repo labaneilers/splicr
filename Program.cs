@@ -15,35 +15,14 @@ namespace Splicr
     {
         public static void Main(string[] args)
         {
-            var config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables()
-                .Build();
-
             var host = new WebHostBuilder()
                 .UseKestrel()
-                .UseConfiguration(config)
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
-                //.ConfigureLogging(l => l.AddConsole(config.GetSection("Logging")))
-                .ConfigureServices(s => s.AddRouting())
-                .Configure(app =>
-                {
-                    // to do - wire in our HTTP endpoints
-                    app.UseMiddleware<ProxyMiddleware>();
-                })
+                .UseStartup<Startup>()
                 .Build();
 
-            // TODO: Create a configuration system for this
-            
-            BackendRegistry.Register(new RegexBackend("http://localhost:5001", @"^\/content1\/(.*)", "/$1"));
-            BackendRegistry.Register(new RegexBackend("http://localhost:5002", @"^\/content2\/(.*)", "/$1"));
-
-            LayoutRegistry.Register("standard", "http://localhost:5001/standard.html", true);
-            LayoutRegistry.Register("lite", "http://localhost:5001/lite.html", false);
-
-            host.Run();
+            host.Run(); 
         }
     }
 }

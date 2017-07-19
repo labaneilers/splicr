@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -16,7 +17,11 @@ namespace Splicr
 {
     public class ProxyHttpClient
     {
-        private static HttpClient _httpClient = new HttpClient();
+        private static HttpClient _httpClient = new HttpClient(
+            new HttpClientHandler() 
+            { 
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate 
+            });
 
         public static async Task<HttpResponseMessage> Send(HttpContext httpContext, string url)
         {   
