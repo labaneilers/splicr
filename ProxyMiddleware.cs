@@ -37,7 +37,9 @@ namespace Splicr
             if (!httpContext.Request.Cookies.TryGetValue(SESSION_KEY, out sessionId))
             {
                 ISessionCreator sessionCreator = GetSessionCreator();
-                return await sessionCreator.Create(httpContext);
+                sessionId = await sessionCreator.Create(httpContext);
+
+                httpContext.Response.Cookies.Append(SESSION_KEY, sessionId);
             }
 
             return sessionId;
@@ -119,37 +121,34 @@ namespace Splicr
 
                 string backendUrl = BackendRegistry.GetUrl(httpContext.Request);
 
-                HttpResponseMessage response = await ProxyHttpClient.Send(
+                using (HttpResponseMessage response = await ProxyHttpClient.Send(
                     httpContext, 
-                    backendUrl);
-
-                httpContext.Response.StatusCode = (int)response.StatusCode;
-
-                httpContext.Response.Headers.Clear();
-
-                httpContext.Response.Cookies.Append(SESSION_KEY, sessionId);
-
-                ProxyHttpClient.CopyResponseHeaders(response.Headers, httpContext.Response.Headers);
-                ProxyHttpClient.CopyResponseHeaders(response.Content.Headers, httpContext.Response.Headers);
-
-                // TODO: Find all statuses that shouldn't write content
-                // For a 304 response, don't write any content
-                if (response.StatusCode == HttpStatusCode.NotModified)
+                    backendUrl))
                 {
-                    return;
+                    httpContext.Response.StatusCode = (int)response.StatusCode;
+
+                    httpContext.Response.Headers.Clear();
+
+                    ProxyHttpClient.CopyResponseHeaders(response.Headers, httpContext.Response.Headers);
+                    ProxyHttpClient.CopyResponseHeaders(response.Content.Headers, httpContext.Response.Headers);
+
+                    // TODO: Find all statuses that shouldn't write content
+                    // For a 304 response, don't write any content
+                    if (response.StatusCode == HttpStatusCode.NotModified)
+                    {
+                        return;
+                    }
+
+                    httpContext.Response.Headers.Remove("transfer-encoding");
+
+                    Layout layout = LayoutRegistry.Get(response.Headers);
+
+                    await layout.WriteHtmlHeader(httpContext, response);
+
+                    await response.Content.CopyToAsync(httpContext.Response.Body);
+
+                    await layout.WriteHtmlFooter(httpContext, response);
                 }
-
-                // TODO: Something's occasionally not working with chunked encoding
-                // Look into this
-                httpContext.Response.ContentLength = null;
-
-                Layout layout = LayoutRegistry.Get(response.Headers);
-
-                await layout.WriteHtmlHeader(httpContext, response);
-
-                await response.Content.CopyToAsync(httpContext.Response.Body);
-
-                await layout.WriteHtmlFooter(httpContext, response);
             }
             catch (Exception ex)
             {
