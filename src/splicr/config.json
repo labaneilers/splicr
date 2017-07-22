@@ -1,0 +1,39 @@
+{
+    "backends": [
+        {
+            "type": "regex",
+            "hostname": "http://localhost:5001", 
+            "data": {
+                "match": "^\\/content1\\/(.*)", 
+                "replace": "/$1"
+            }
+        },
+        {
+            "type": "regex",
+            "hostname": "http://www.labaneilers.com", 
+            "data": {
+                "match": "^\\/laban\\/(.*)", 
+                "replace": "/$1"
+            }
+        },
+        {
+            "type": "regex",
+            "hostname": "http://www.labaneilers.com", 
+            "data": {
+                "match": "(.*)", 
+                "replace": "$1"
+            }
+        }
+    ],
+    "layouts": [
+        {
+            "name": "standard",
+            "url": "http://localhost:5001/standard.html",
+            "default": true
+        },
+        {
+            "name": "lite",
+            "url": "http://localhost:5001/lite.html"
+        }
+    ]
+}

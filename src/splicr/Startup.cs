@@ -18,8 +18,11 @@ namespace Splicr
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddJsonFile("config.json")
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
+
+            ConfigurationLoader.Load(Configuration);
         }
 
         public IConfigurationRoot Configuration { get; }
@@ -29,14 +32,6 @@ namespace Splicr
         {
             // Add framework services.
             services.AddResponseCompression();
-
-            // TODO convert to DI injected
-            BackendRegistry.Register(new RegexBackend("http://localhost:5001", @"^\/content1\/(.*)", "/$1"));
-            BackendRegistry.Register(new RegexBackend("http://www.labaneilers.com", @"^\/laban\/(.*)", "/$1"));
-            BackendRegistry.Register(new RegexBackend("http://www.labaneilers.com", @"(.*)", "$1"));
-
-            LayoutRegistry.Register("standard", "http://localhost:5001/standard.html", true);
-            LayoutRegistry.Register("lite", "http://localhost:5001/lite.html", false);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
