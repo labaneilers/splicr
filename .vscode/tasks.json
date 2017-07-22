@@ -7,7 +7,7 @@
         {
             "taskName": "build",
             "args": [
-                "${workspaceRoot}/splicr.csproj"
+                "${workspaceRoot}/src/splicr/splicr.csproj"
             ],
             "isBuildCommand": true,
             "problemMatcher": "$msCompile"
