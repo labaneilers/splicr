@@ -10,6 +10,7 @@ namespace Splicr
         {
             LoadBackends(config);
             LoadLayouts(config);
+            LoadSession(config);
         }
 
         private static void LoadBackends(IConfigurationRoot config)
@@ -43,6 +44,14 @@ namespace Splicr
                 LayoutRegistry.Register(layoutConfig.Name, layoutConfig.Url, layoutConfig.Default);
             }
         }
+
+        private static void LoadSession(IConfigurationRoot config)
+        {
+            var session = new SessionConfig();
+            config.GetSection("session").Bind(session);
+
+            SessionCreator.Instance = new SessionCreator(session.Url, session.Async);
+        }
     }
 
     public class BackendConfig
@@ -61,6 +70,13 @@ namespace Splicr
         public string Url { get; set; }
 
         public bool Default { get; set; }
+    }
+
+    public class SessionConfig
+    {
+        public string Url { get; set; }
+        
+        public bool Async { get; set; }
     }
 
 }

@@ -35,5 +35,9 @@
             "name": "lite",
             "url": "http://localhost:5001/lite.html"
         }
-    ]
+    ],
+    "session": {
+        "async": false,
+        "url": "http://localhost:5001/session.json"
+    }
 }

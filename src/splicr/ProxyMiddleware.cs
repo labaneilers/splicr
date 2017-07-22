@@ -24,7 +24,7 @@ namespace Splicr
 
         private ISessionCreator GetSessionCreator()
         {
-            return new SyncSessionCreator();
+            return SessionCreator.Instance;
         }
 
         public Task Invoke(HttpContext context) => HandleHttpRequest(context);
@@ -117,8 +117,6 @@ namespace Splicr
             
             try
             {   
-                string sessionId = await InitializeSession(httpContext);
-
                 string backendUrl = BackendRegistry.GetUrl(httpContext.Request);
 
                 if (backendUrl == null)
@@ -136,6 +134,8 @@ namespace Splicr
 
                     ProxyHttpClient.CopyResponseHeaders(response.Headers, httpContext.Response.Headers);
                     ProxyHttpClient.CopyResponseHeaders(response.Content.Headers, httpContext.Response.Headers);
+
+                    string sessionId = await InitializeSession(httpContext);
 
                     // TODO: Find all statuses that shouldn't write content
                     // For a 304 response, don't write any content
