@@ -9,26 +9,25 @@ namespace Splicr
 {
     public static class PluginManager
     {
-        public static IDictionary<string, IBackend> Backends = new Dictionary<string, IBackend>(StringComparer.OrdinalIgnoreCase);
+        public static IDictionary<string, Type> BackendTypes = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase);
 
-        public static void LoadDirectory(string path, IDictionary<string, string> config)
+        public static void LoadDirectory(string path)
         {
             var files = Directory.EnumerateFiles(path, "*.dll", SearchOption.AllDirectories).ToList();
             foreach (string file in files)
             {
-                LoadFile(Path.GetFullPath(file), config);
+                LoadFile(Path.GetFullPath(file));
             }
         }
 
-        private static void LoadFile(string file, IDictionary<string, string> config)
+        private static void LoadFile(string file)
         {
             var myAssembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(file);
             foreach (Type type in myAssembly.GetExportedTypes())
             {
                 if (type.Name.StartsWith("Backend"))
                 {
-                    var backend = new PluginBackend(type, config);
-                    Backends.Add(type.AssemblyQualifiedName, backend);
+                    BackendTypes.Add(type.AssemblyQualifiedName, type);
                 }
             }
         }

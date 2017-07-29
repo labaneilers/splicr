@@ -19,8 +19,9 @@
         {
             "type": "plugin",
             "data": {
-                "hostname": "http://www.labaneilers.com", 
-                "classname": "plugin.Backend1, plugin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+                "hostname": "https://msdn.microsoft.com", 
+                "classname": "plugin.Backend1, plugin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                "startsegment": "/msdn"
             }
         },
         {

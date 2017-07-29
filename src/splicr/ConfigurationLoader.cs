@@ -21,7 +21,7 @@ namespace Splicr
 
             foreach (PluginConfig pluginConfig in plugins)
             {
-                PluginManager.LoadDirectory(pluginConfig.Dir, pluginConfig.Data);
+                PluginManager.LoadDirectory(pluginConfig.Dir);
             }
         }
 
@@ -39,10 +39,13 @@ namespace Splicr
                 }
                 else if (backendConfig.Type == "plugin")
                 {
-                    if (!PluginManager.Backends.TryGetValue(backendConfig.Data["classname"], out backend))
+                    Type pluginType;
+                    if (!PluginManager.BackendTypes.TryGetValue(backendConfig.Data["classname"], out pluginType))
                     {
                         throw new Exception($"Couldn't find plugin type: {backendConfig.Data["classname"]}");
                     }
+
+                    backend = new PluginBackend(pluginType, backendConfig.Data);
                 }
                 else
                 {
