@@ -39,6 +39,7 @@ namespace Splicr
         {
             app.UseResponseCompression();            
             app.UseMiddleware<ProxyMiddleware>();
+            app.UseMiddleware<NoBackendMiddleware>();
 
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();

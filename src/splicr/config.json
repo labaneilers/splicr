@@ -24,14 +24,14 @@
                 "startsegment": "/msdn"
             }
         },
-        {
-            "type": "regex",
-            "data": {
-                "hostname": "http://www.labaneilers.com", 
-                "match": "(.*)", 
-                "replace": "$1"
-            }
-        }
+        // {
+        //     "type": "regex",
+        //     "data": {
+        //         "hostname": "http://www.labaneilers.com", 
+        //         "match": "(.*)", 
+        //         "replace": "$1"
+        //     }
+        // }
     ],
     "layouts": [
         {

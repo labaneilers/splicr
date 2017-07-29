@@ -121,7 +121,10 @@ namespace Splicr
 
                 if (backendUrl == null)
                 {
-                    throw new Exception($"No backend found for path: {httpContext.Request.Path + httpContext.Request.QueryString}");
+                    // No backend found, continue through the middleware pipeline
+                    await _next.Invoke(httpContext);
+                    return;
+                    //throw new Exception($"No backend found for path: {httpContext.Request.Path + httpContext.Request.QueryString}");
                 }
 
                 using (HttpResponseMessage response = await ProxyHttpClient.Send(
@@ -173,9 +176,6 @@ namespace Splicr
                 await httpContext.Response.WriteAsync("Source: " + ex.Source + "\n");
                 await httpContext.Response.WriteAsync("Stack: " + ex.StackTrace + "\n");
             }
-
-            // Call the next middleware delegate in the pipeline 
-            //await _next.Invoke(httpContext);
         }
     }
 }
