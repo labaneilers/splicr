@@ -2,24 +2,31 @@
     "backends": [
         {
             "type": "regex",
-            "hostname": "http://localhost:5001", 
             "data": {
+                "hostname": "http://localhost:5001", 
                 "match": "^\\/content1\\/(.*)", 
                 "replace": "/$1"
             }
         },
         {
             "type": "regex",
-            "hostname": "http://www.labaneilers.com", 
             "data": {
+                "hostname": "http://www.labaneilers.com", 
                 "match": "^\\/laban\\/(.*)", 
                 "replace": "/$1"
             }
         },
         {
-            "type": "regex",
-            "hostname": "http://www.labaneilers.com", 
+            "type": "plugin",
             "data": {
+                "hostname": "http://www.labaneilers.com", 
+                "classname": "plugin.Backend1, plugin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+            }
+        },
+        {
+            "type": "regex",
+            "data": {
+                "hostname": "http://www.labaneilers.com", 
                 "match": "(.*)", 
                 "replace": "$1"
             }
@@ -39,5 +46,11 @@
     "session": {
         "async": false,
         "url": "http://localhost:5001/session.json"
-    }
+    },
+    "plugins": [
+        {
+            "dir": "../plugin/bin/Debug/netstandard2.0/"
+        }
+    ]
+        
 }

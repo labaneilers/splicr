@@ -29,12 +29,12 @@ namespace Splicr
         public async Task<string> Create(HttpContext httpContext)
         {
             //  TODO: Use a cryptographic key
-            string sessionId = Guid.NewGuid().ToString();
+            string sessionId = Guid.NewGuid().ToString("N");
 
             // Notify a service that a new session is detected
             var task = ProxyHttpClient.Send(
                 httpContext, 
-                "http://localhost:5001/session.json");
+                _url);
 
             if (_isAsync)
             {

@@ -8,9 +8,21 @@ namespace Splicr
     {
         public static void Load(IConfigurationRoot config)
         {
+            LoadPlugins(config);
             LoadBackends(config);
             LoadLayouts(config);
             LoadSession(config);
+        }
+
+        private static void LoadPlugins(IConfigurationRoot config)
+        {
+            var plugins = new List<PluginConfig>();
+            config.GetSection("plugins").Bind(plugins);
+
+            foreach (PluginConfig pluginConfig in plugins)
+            {
+                PluginManager.LoadDirectory(pluginConfig.Dir, pluginConfig.Data);
+            }
         }
 
         private static void LoadBackends(IConfigurationRoot config)
@@ -23,7 +35,14 @@ namespace Splicr
                 IBackend backend = null;
                 if (backendConfig.Type == "regex")
                 {
-                    backend = new RegexBackend(backendConfig.HostName, backendConfig.Data["match"], backendConfig.Data["replace"]);
+                    backend = new RegexBackend(backendConfig.Data["hostname"], backendConfig.Data["match"], backendConfig.Data["replace"]);
+                }
+                else if (backendConfig.Type == "plugin")
+                {
+                    if (!PluginManager.Backends.TryGetValue(backendConfig.Data["classname"], out backend))
+                    {
+                        throw new Exception($"Couldn't find plugin type: {backendConfig.Data["classname"]}");
+                    }
                 }
                 else
                 {
@@ -58,8 +77,6 @@ namespace Splicr
     {
         public string Type { get; set; }
 
-        public string HostName { get; set; }
-
         public Dictionary<string, string> Data { get; set; }
     }
 
@@ -77,6 +94,13 @@ namespace Splicr
         public string Url { get; set; }
         
         public bool Async { get; set; }
+    }
+
+    public class PluginConfig
+    {
+        public string Dir { get; set; }
+
+        public Dictionary<string, string> Data { get; set; }
     }
 
 }
