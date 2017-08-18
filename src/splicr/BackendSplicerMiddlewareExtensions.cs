@@ -26,8 +26,14 @@ namespace Splicr
 
         private static LayoutRegistry BuildLayoutRegistry(IConfigurationSection config)
         {
+            var layoutsConfig = config.GetSection("Layouts");
+            if (layoutsConfig == null)
+            {
+                throw new Exception("BackendSplicer.Layouts configuration section not found");
+            }
+
             var layouts = new List<LayoutConfig>();
-            config.GetSection("Layouts").Bind(layouts);
+            layoutsConfig.Bind(layouts);
 
             var layoutRegistry = new LayoutRegistry();
             foreach (LayoutConfig layoutConfig in layouts)
@@ -39,8 +45,14 @@ namespace Splicr
         
         private static IEnumerable<IBackend> GetBackends(IConfigurationSection config)
         {
+            var backendsConfig = config.GetSection("Backends");
+            if (backendsConfig == null)
+            {
+                throw new Exception("BackendSplicer.Backends configuration section not found")
+            }
+
             var backends = new List<BackendConfig>();
-            config.GetSection("Backends").Bind(backends);
+            backendsConfig.Bind(backends);
 
             foreach (BackendConfig backendConfig in backends)
             {

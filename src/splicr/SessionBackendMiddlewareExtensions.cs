@@ -17,6 +17,11 @@ namespace Splicr
     {
         public static IApplicationBuilder UseSessionBackend(this IApplicationBuilder app, IConfigurationSection sessionSection)
         {
+            if (sessionSection == null)
+            {
+                return app;
+            }
+            
             var config = new SessionConfig();
             sessionSection.Bind(config);
 
