@@ -7,11 +7,11 @@ using System.Runtime.Loader;
 
 namespace Splicr
 {
-    public static class PluginManager
+    public class PluginManager
     {
-        public static IDictionary<string, Type> BackendTypes = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase);
+        public IDictionary<string, Type> BackendTypes { get; } = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase);
 
-        public static void LoadDirectory(string path)
+        public void LoadDirectory(string path)
         {
             var files = Directory.EnumerateFiles(path, "*.dll", SearchOption.AllDirectories).ToList();
             foreach (string file in files)
@@ -20,7 +20,7 @@ namespace Splicr
             }
         }
 
-        private static void LoadFile(string file)
+        private void LoadFile(string file)
         {
             var myAssembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(file);
             foreach (Type type in myAssembly.GetExportedTypes())

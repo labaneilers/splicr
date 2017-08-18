@@ -14,13 +14,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Splicr
 {
-    public static class LayoutRegistry
+    public class LayoutRegistry
     {
-        private static Layout _defaultLayout;
+        private Layout _defaultLayout;
 
-        private static Dictionary<string, Layout> _layouts = new Dictionary<string, Layout>(StringComparer.OrdinalIgnoreCase);
+        private Dictionary<string, Layout> _layouts = new Dictionary<string, Layout>(StringComparer.OrdinalIgnoreCase);
 
-        public static void Register(string name, string url, bool isDefault = false)
+        public void Register(string name, string url, bool isDefault = false)
         {
             var layout = new Layout(name, url);
             _layouts.Add(name, layout);
@@ -30,7 +30,7 @@ namespace Splicr
             }
         }
 
-        public static Layout Get(HttpHeaders headers)
+        public Layout Get(HttpHeaders headers)
         {
             IEnumerable<string> values;
             if (headers.TryGetValues("x-splicr-layout", out values))
@@ -41,7 +41,7 @@ namespace Splicr
             return _defaultLayout;
         }
 
-        public static Layout Get(string name)
+        public Layout Get(string name)
         {
             if (!string.IsNullOrWhiteSpace(name))
             {

@@ -18,11 +18,8 @@ namespace Splicr
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddJsonFile("config.json")
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
-
-            ConfigurationLoader.Load(Configuration);
         }
 
         public IConfigurationRoot Configuration { get; }
@@ -37,9 +34,21 @@ namespace Splicr
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            app.UseResponseCompression();            
-            app.UseMiddleware<ProxyMiddleware>();
-            app.UseMiddleware<NoBackendMiddleware>();
+            app.UseResponseCompression();
+
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                // TODO create error page
+                app.UseExceptionHandler("/error");
+            }
+
+            app.UseSessionBackend(Configuration.GetSection("SessionBackend"));
+            app.UseBackendSplicer(Configuration.GetSection("BackendSplicer"));
+            app.UseNoBackend();
 
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();

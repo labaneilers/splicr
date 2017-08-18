@@ -13,16 +13,21 @@ using Microsoft.Extensions.Logging;
 
 namespace Splicr
 {
-    public static class BackendRegistry
+    public class BackendRegistry
     {
-        private static List<IBackend> _backends = new List<IBackend>();
+        private List<IBackend> _backends = new List<IBackend>();
 
-        public static void Register(IBackend backend)
+        public BackendRegistry(IEnumerable<IBackend> backends)
+        {
+            _backends.AddRange(backends);
+        }
+
+        public void Register(IBackend backend)
         {
             _backends.Add(backend);
         }
 
-        public static string GetUrl(HttpRequest request)
+        public string GetUrl(HttpRequest request)
         {
             foreach (IBackend backend in _backends)
             {

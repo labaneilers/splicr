@@ -17,13 +17,14 @@ namespace Splicr
 {
     public class ProxyHttpClient
     {
+        // Store only one application level HttpClient to allow connection pooling
         private static HttpClient _httpClient = new HttpClient(
             new HttpClientHandler() 
             { 
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate 
             });
 
-        public static async Task<HttpResponseMessage> Send(HttpContext httpContext, string url)
+        public async Task<HttpResponseMessage> Send(HttpContext httpContext, string url)
         {   
             var requestMessage = new HttpRequestMessage();
             var requestMethod = httpContext.Request.Method;
@@ -49,13 +50,27 @@ namespace Splicr
             requestMessage.RequestUri = new Uri(url);
             requestMessage.Method = new HttpMethod(requestMethod);
 
-            return await _httpClient.SendAsync(
-                requestMessage, 
-                HttpCompletionOption.ResponseHeadersRead,
-                httpContext.RequestAborted);
+            try
+            {
+                return await _httpClient.SendAsync(
+                    requestMessage, 
+                    HttpCompletionOption.ResponseHeadersRead,
+                    httpContext.RequestAborted);
+            }
+            catch (HttpRequestException ex)
+            {
+                if (ex.InnerException?.GetType().Name == "CurlException")
+                {
+                    var newEx = new HttpRequestException("Error requesting backend URL: " + url, ex);
+                    newEx.Data.Add("url", url);
+                    throw newEx;
+                }
+                
+                throw;
+            }
         }
 
-        public static void CopyResponseHeaders(IEnumerable<KeyValuePair<string, IEnumerable<string>>> source, IHeaderDictionary dest)
+        public void CopyResponseHeaders(IEnumerable<KeyValuePair<string, IEnumerable<string>>> source, IHeaderDictionary dest)
         {
             foreach (var pair in source) {
                 // Console.WriteLine($"copying response header: {pair.Key}: {string.Join(", ", pair.Value)}");
@@ -64,7 +79,7 @@ namespace Splicr
             }   
         }
 
-        public static void CopyRequestHeaders(IHeaderDictionary source, HttpHeaders dest, HttpHeaders contentDest, ISet<string> exclude = null)
+        public void CopyRequestHeaders(IHeaderDictionary source, HttpHeaders dest, HttpHeaders contentDest, ISet<string> exclude = null)
         {
             foreach (var pair in source) 
             {
