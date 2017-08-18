@@ -150,7 +150,6 @@ namespace Splicr
                     await response.Content.CopyToAsync(httpContext.Response.Body);
                 }
             }
-            
         }
     }
 }

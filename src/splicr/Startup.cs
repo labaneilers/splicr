@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -44,8 +45,7 @@ namespace Splicr
             }
             else
             {
-                // TODO create error page
-                app.UseExceptionHandler("/error");
+                app.UseExceptionHandler(new ExceptionHandlerOptions() { ExceptionHandler = HandleException });
             }
 
             app.UseSessionBackend(Configuration.GetSection("SessionBackend"));
@@ -54,6 +54,12 @@ namespace Splicr
 
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
+        }
+
+        private static async Task HandleException(HttpContext context)
+        {
+            context.Response.StatusCode = 500;
+            await context.Response.WriteAsync("An error occurred");
         }
     }
 }

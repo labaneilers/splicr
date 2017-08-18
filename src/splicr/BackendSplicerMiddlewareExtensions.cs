@@ -51,10 +51,10 @@ namespace Splicr
                 }
                 else if (backendConfig.Type == "plugin")
                 {
-                    Type pluginType = Type.GetType(backendConfig.Data["classname"], false, true);
+                    Type pluginType = Type.GetType(backendConfig.ClassName, false, true);
                     if (pluginType == null)
                     {
-                        throw new Exception($"Couldn't find plugin type: {backendConfig.Data["classname"]}");
+                        throw new Exception($"Couldn't find plugin type: {backendConfig.ClassName}");
                     }
 
                     backend = new PluginBackend(pluginType, backendConfig.Data);
@@ -80,6 +80,8 @@ namespace Splicr
         private class BackendConfig
         {
             public string Type { get; set; }
+
+            public string ClassName { get; set; }
 
             public Dictionary<string, string> Data { get; set; }
         }
