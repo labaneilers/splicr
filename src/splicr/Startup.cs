@@ -20,6 +20,8 @@ namespace Splicr
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
+
+            PluginLoader.Load(Configuration.GetSection("Plugins"));
         }
 
         public IConfigurationRoot Configuration { get; }

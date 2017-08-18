@@ -19,6 +19,7 @@ namespace Splicr
             MethodInfo methodInfo = type.GetMethod("GetUrl");
             _pointer = (Func<HttpRequest, string>)methodInfo.CreateDelegate(typeof(Func<HttpRequest, string>), _instance);
         }
+        
         public string GetUrl(HttpRequest request)
         {
             return _pointer(request);

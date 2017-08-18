@@ -18,10 +18,8 @@ namespace Splicr
         public static IApplicationBuilder UseBackendSplicer(this IApplicationBuilder app, IConfigurationSection config)
         {
             var layoutRegistry = BuildLayoutRegistry(config);
-
-            var pluginManager = BuildPluginManager(config);
             
-            var backendRegistry = new BackendRegistry(GetBackends(config, pluginManager));
+            var backendRegistry = new BackendRegistry(GetBackends(config));
 
             return app.UseMiddleware<BackendSplicerMiddleware>(layoutRegistry, backendRegistry);
         }
@@ -38,21 +36,8 @@ namespace Splicr
             }
             return layoutRegistry;
         }
-
-        private static PluginManager BuildPluginManager(IConfigurationSection config)
-        {
-            var plugins = new List<PluginConfig>();
-            config.GetSection("Plugins").Bind(plugins);
-
-            var pluginManager = new PluginManager();
-            foreach (var pluginConfig in plugins)
-            {
-                pluginManager.LoadDirectory(pluginConfig.Dir);
-            }
-            return pluginManager;
-        }
         
-        private static IEnumerable<IBackend> GetBackends(IConfigurationSection config, PluginManager pluginManager)
+        private static IEnumerable<IBackend> GetBackends(IConfigurationSection config)
         {
             var backends = new List<BackendConfig>();
             config.GetSection("Backends").Bind(backends);
@@ -66,8 +51,8 @@ namespace Splicr
                 }
                 else if (backendConfig.Type == "plugin")
                 {
-                    Type pluginType;
-                    if (!pluginManager.BackendTypes.TryGetValue(backendConfig.Data["classname"], out pluginType))
+                    Type pluginType = Type.GetType(backendConfig.Data["classname"], false, true);
+                    if (pluginType == null)
                     {
                         throw new Exception($"Couldn't find plugin type: {backendConfig.Data["classname"]}");
                     }
@@ -95,13 +80,6 @@ namespace Splicr
         private class BackendConfig
         {
             public string Type { get; set; }
-
-            public Dictionary<string, string> Data { get; set; }
-        }
-
-        private class PluginConfig
-        {
-            public string Dir { get; set; }
 
             public Dictionary<string, string> Data { get; set; }
         }
