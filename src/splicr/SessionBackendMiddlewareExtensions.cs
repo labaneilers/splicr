@@ -20,7 +20,7 @@ namespace Splicr
             var config = new SessionConfig();
             sessionSection.Bind(config);
 
-            return app.UseMiddleware<SessionBackendMiddleware>(config.Url, config.Async);
+            return app.UseMiddleware<SessionBackendMiddleware>(config.Url, config.Async, config.CookieName);
         }
 
         private class SessionConfig
@@ -28,6 +28,8 @@ namespace Splicr
             public string Url { get; set; }
             
             public bool Async { get; set; }
+
+            public string CookieName { get; set; }
         }
     }
 }

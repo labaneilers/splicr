@@ -120,8 +120,6 @@ namespace Splicr
             {
                 httpContext.Response.StatusCode = (int)response.StatusCode;
 
-                httpContext.Response.Headers.Clear();
-
                 _proxyHttpClient.CopyResponseHeaders(response.Headers, httpContext.Response.Headers);
                 _proxyHttpClient.CopyResponseHeaders(response.Content.Headers, httpContext.Response.Headers);
 

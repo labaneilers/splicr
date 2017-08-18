@@ -21,29 +21,30 @@ namespace Splicr
 
         private bool _isAsync;
 
+        private string _cookieName;
+
         private ProxyHttpClient _proxyHttpClient;
 
-        public SessionBackendMiddleware(RequestDelegate next, string url, bool isAsync = true, ProxyHttpClient proxyHttpClient = null)
+        public SessionBackendMiddleware(RequestDelegate next, string url, bool isAsync = true, string cookieName = "sessionId", ProxyHttpClient proxyHttpClient = null)
         {
             _next = next;
             _url = url;
             _isAsync = isAsync;
+            _cookieName = cookieName;
             _proxyHttpClient = proxyHttpClient ?? new ProxyHttpClient();
         }
-
-        const string SESSION_KEY = "splicrSessionId";
 
         public async Task Invoke(HttpContext context)
         {
             string sessionId;
-            if (!context.Request.Cookies.TryGetValue(SESSION_KEY, out sessionId))
+            if (!context.Request.Cookies.TryGetValue(_cookieName, out sessionId))
             {
                 sessionId = await Create(context);
 
-                context.Response.Cookies.Append(SESSION_KEY, sessionId);
+                context.Response.Cookies.Append(_cookieName, sessionId);
             }
 
-            context.Items[SESSION_KEY] = sessionId;
+            context.Items[_cookieName] = sessionId;
 
             await _next.Invoke(context);
         }
