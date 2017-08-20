@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -45,7 +46,12 @@ namespace Splicr
             }
             else
             {
-                app.UseExceptionHandler(new ExceptionHandlerOptions() { ExceptionHandler = HandleException });
+                app.UseExceptionHandler(appBuilder => {
+                    appBuilder.Run(async context => {
+                        context.Response.StatusCode = 500;
+                        await context.Response.WriteAsync("An error occurred");
+                    });
+                });
             }
 
             app.UseSessionBackend(Configuration.GetSection("SessionBackend"));
@@ -54,12 +60,6 @@ namespace Splicr
 
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
-        }
-
-        private static async Task HandleException(HttpContext context)
-        {
-            context.Response.StatusCode = 500;
-            await context.Response.WriteAsync("An error occurred");
         }
     }
 }

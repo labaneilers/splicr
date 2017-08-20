@@ -48,7 +48,7 @@ namespace Splicr
             var backendsConfig = config.GetSection("Backends");
             if (backendsConfig == null)
             {
-                throw new Exception("BackendSplicer.Backends configuration section not found")
+                throw new Exception("BackendSplicer.Backends configuration section not found");
             }
 
             var backends = new List<BackendConfig>();

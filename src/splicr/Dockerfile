@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:1.1-sdk AS build-env
+FROM microsoft/aspnetcore-build:2.0 AS build-env
 WORKDIR /app
 
 # copy csproj and restore as distinct layers
@@ -7,10 +7,10 @@ RUN dotnet restore
 
 # copy everything else and build
 COPY . ./
-RUN dotnet publish -c Release -o out -r debian.8-x64
+RUN dotnet publish -c Release -o out
 
 # build runtime image
-FROM microsoft/dotnet:1.1-runtime-deps
+FROM microsoft/aspnetcore:2.0
 WORKDIR /app
-COPY --from=build-env /app/out ./
-ENTRYPOINT ["./dotnetapp"]
+COPY --from=build-env /app/out .
+ENTRYPOINT ["dotnet", "splicr.dll"]
