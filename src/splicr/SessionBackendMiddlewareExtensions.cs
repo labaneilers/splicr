@@ -25,6 +25,11 @@ namespace Splicr
             var config = new SessionConfig();
             sessionSection.Bind(config);
 
+            if (config.Url == null)
+            {
+                throw new Exception("No value for 'url' supplied in SesssionBackend configuration");
+            }
+
             return app.UseMiddleware<SessionBackendMiddleware>(config.Url, config.Async, config.CookieName);
         }
 

@@ -1,1 +1,1 @@
-docker run -it --rm -p 5000:80 --name splicr splicr
+docker run -it --rm -p 5000:80 --name splicr-webapp splicr-webapp

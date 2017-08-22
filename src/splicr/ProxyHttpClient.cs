@@ -52,6 +52,8 @@ namespace Splicr
 
             try
             {
+                Console.WriteLine("CALLING: " + url);
+                
                 return await _httpClient.SendAsync(
                     requestMessage, 
                     HttpCompletionOption.ResponseHeadersRead,
